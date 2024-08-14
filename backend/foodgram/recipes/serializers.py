@@ -4,7 +4,7 @@ from django.core.files.base import ContentFile
 from rest_framework import serializers
 
 from .models import (
-    Ingredient,
+    Ingredients,
     IngredientRecipe,
     Recipe,
     Tag,
@@ -16,7 +16,7 @@ class IngredientSerializer(serializers.ModelSerializer):
     ingridient_name = serializers.CharField(source='name')
 
     class Meta:
-        model = Ingredient
+        model = Ingredients
         fields = ('id', 'ingridient_name')
 
 
@@ -72,7 +72,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         tags = validated_data.pop('tags')
         recipe = Recipe.objects.create(**validated_data)
         for ingridient in ingridients:
-            current_ingridient, status = Ingredient.objects.get_or_create(
+            current_ingridient, status = Ingredients.objects.get_or_create(
                 **ingridient
             )
             IngredientRecipe.objects.create(
@@ -105,7 +105,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         ingridients_data = validated_data.pop('ingridients')
         lst = []
         for ingridient in ingridients_data:
-            current_ingridient, status = Ingredient.objects.get_or_create(
+            current_ingridient, status = Ingredients.objects.get_or_create(
                 **ingridient
             )
             lst.append(current_ingridient)

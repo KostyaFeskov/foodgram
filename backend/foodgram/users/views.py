@@ -16,7 +16,7 @@ from rest_framework.authtoken.models import Token
 from users.permissions import IsAdmin
 from users.serializers import (
     SignUpSerializer, TokenSerializer,
-    UserSerializer, UserEditSerializer
+    UserSerializer
 )
 
 from users.models import User
@@ -31,22 +31,25 @@ class UserViewSet(viewsets.ModelViewSet):
     search_fields = ('email', 'username',)
     lookup_field = 'id'
     permission_classes = (AllowAny,)
-    http_method_names = ['get', 'post', 'patch', 'delete']
+    http_method_names = ['get', 'post', 'patch', 'delete', 'put']
+    ALLOWED_HTTP_METHODS = ('get', 'post', 'put', 'delete')
 
-    # @action(
-    #     methods=('put', 'delete',),
-    #     detail=False,
-    #     url_path='me/avatar',
-    #     permission_classes=(IsAuthenticated,)
-    # )
-    # def avatar(self, request):
-    #     serializer = UserEditSerializer(
-    #         request.user,
-    #         partial=True,
-    #         data=request.data
-    #     )
-    #     serializer.save()
-    #     return Response(serializer.data, status=status.HTTP_200_OK)
+    @action(
+        methods=('put', 'delete',),
+        detail=False,
+        url_path='me/avatar',
+        permission_classes=(IsAuthenticated,)
+    )
+    def avatar(self, request):
+        serializer = UserSerializer(
+            request.user,
+            partial=True,
+            data=request.data
+        )
+        # {"avatar": request.build_absolute_uri(user.avatar.url)}
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(
         methods=('get', 'patch',),
@@ -55,7 +58,7 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def me(self, request):
-        serializer = UserEditSerializer(
+        serializer = UserSerializer(
             request.user,
             partial=True,
             data=request.data

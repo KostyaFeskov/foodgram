@@ -3,7 +3,7 @@ from django.db import models
 from users.models import User
 
 
-class Ingredient(models.Model):
+class Ingredients(models.Model):
     name = models.CharField(max_length=64)
     unit_of_measurement = models.CharField(max_length=10)
 
@@ -27,7 +27,7 @@ class Recipe(models.Model):
         on_delete=models.CASCADE
     )
     ingridients = models.ManyToManyField(
-        Ingredient,
+        Ingredients,
         through='IngredientRecipe'
     )
     image = models.ImageField(
@@ -46,7 +46,7 @@ class Recipe(models.Model):
 
 
 class IngredientRecipe(models.Model):
-    ingridient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
+    ingridient = models.ForeignKey(Ingredients, on_delete=models.CASCADE)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
 
     def __str__(self):

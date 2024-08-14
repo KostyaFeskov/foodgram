@@ -110,24 +110,24 @@ class TokenSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     avatar = Base64ImageField(required=False, allow_null=True)
-    avatar_url = serializers.SerializerMethodField(
-        'get_image_url',
-        read_only=True,
-    )
+    # avatar_url = serializers.SerializerMethodField(
+    #     'get_image_url',
+    #     read_only=True,
+    # )
 
     class Meta:
         fields = ('email', 'id', 'username', 'first_name',
-                  'last_name', 'is_subscribed', 'avatar', 'avatar_url')
+                  'last_name', 'is_subscribed', 'avatar',)
         model = User
 
-    def get_image_url(self, obj):
-        if obj.avatar:
-            return obj.avatar.url
-        return None
+    # def get_image_url(self, obj):
+    #     if obj.avatar:
+    #         return obj.avatar.url
+    #     return None
 
 
-class UserEditSerializer(UserSerializer):
-    """Сериализатор редактирования профиля пользователя."""
+# class UserEditSerializer(UserSerializer):
+#     """Сериализатор редактирования профиля пользователя."""
 
-    class Meta(UserSerializer.Meta):
-        read_only_fields = ('role',)
+#     class Meta(UserSerializer.Meta):
+#         read_only_fields = ('role',)
