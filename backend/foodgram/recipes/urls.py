@@ -13,7 +13,7 @@ app_name = 'recipes'
 router = DefaultRouter()
 
 router.register('recipes', RecipeViewSet, basename='recipes')
-router.register('ingridients', IngridientsViewSet, basename='ingridients')
+router.register('ingredients', IngridientsViewSet, basename='ingridients')
 router.register('tags', TagsViewSet, basename='tags')
 # router.register(reviews_url, ReviewViewSet, basename='reviews')
 # router.register(comments_url, CommentViewSet, basename='comments')

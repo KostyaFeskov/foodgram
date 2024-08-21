@@ -10,9 +10,10 @@ from rest_framework.serializers import (
     ModelSerializer,
     IntegerField
 )
+from rest_framework.validators import UniqueTogetherValidator
 from rest_framework.authtoken.models import Token
 
-from users.models import User
+from users.models import User, Subsribe
 
 
 class Base64ImageField(serializers.ImageField):
@@ -43,10 +44,6 @@ class SignUpSerializer(serializers.ModelSerializer):
         max_length=150,
         required=True
     )
-    password = serializers.CharField(
-        required=True,
-        write_only=True
-    )
 
     class Meta:
         model = User
@@ -57,6 +54,7 @@ class SignUpSerializer(serializers.ModelSerializer):
             'last_name',
             'password'
         )
+        extra_kwargs = {'password': {'write_only': True}}
 
     def validate_username(self, username):
         if username == 'me':
@@ -110,24 +108,49 @@ class TokenSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     avatar = Base64ImageField(required=False, allow_null=True)
-    # avatar_url = serializers.SerializerMethodField(
-    #     'get_image_url',
-    #     read_only=True,
-    # )
 
     class Meta:
         fields = ('email', 'id', 'username', 'first_name',
                   'last_name', 'is_subscribed', 'avatar',)
         model = User
 
-    # def get_image_url(self, obj):
-    #     if obj.avatar:
-    #         return obj.avatar.url
-    #     return None
 
 
-# class UserEditSerializer(UserSerializer):
-#     """Сериализатор редактирования профиля пользователя."""
+class AvatarEditSerializer(UserSerializer):
 
-#     class Meta(UserSerializer.Meta):
-#         read_only_fields = ('role',)
+    class Meta(UserSerializer.Meta):
+        model = User
+        fields = ('avatar',)
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+
+    new_password = serializers.CharField()
+    current_password = serializers.CharField()
+
+
+class SubscribeSerializer(serializers.ModelSerializer):
+    user = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True,
+        default=serializers.CurrentUserDefault())
+    subscription = serializers.SlugRelatedField(
+        slug_field='username',
+        queryset=User.objects.all())
+
+    class Meta:
+        model = User
+        fields = ('user', 'subscription')
+        validators = (
+            UniqueTogetherValidator(
+                queryset=Subsribe.objects.all(),
+                fields=('user', 'subscription'),
+                message=('Вы уже подписаны на этого автора')
+            ),
+        )
+
+    def validate(self, data):
+        if self.context['request'].user == data['subsribtion']:
+            raise serializers.ValidationError(
+                'Нельзя подписаться на себя!')
+        return data
