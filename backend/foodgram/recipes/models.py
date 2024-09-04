@@ -1,12 +1,11 @@
 from django.db import models
 
-from users.models import User
+from django.core.validators import MinValueValidator
 
-from django.core.validators import (
-    MinValueValidator, RegexValidator, FileExtensionValidator
-)
 from django.db.models import UniqueConstraint
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
 class Ingredient(models.Model):
     name = models.CharField(max_length=64)
@@ -82,3 +81,24 @@ class TagRecipe(models.Model):
             UniqueConstraint(fields=['recipe', 'tag'],
                              name='unique_recipe_tag')
         ]
+
+
+class ShoppingCart(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='users_shopping_cart'
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='shopping_cart_recipe'
+    )
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=('user', 'recipe'),
+                name='unique_shopping_cart'
+            ),)
+

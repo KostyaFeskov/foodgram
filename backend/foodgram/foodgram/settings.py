@@ -36,8 +36,11 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework.authtoken',
     'foodgram',
-    'users',
-    'recipes',
+    'users.apps.UsersConfig',
+    'recipes.apps.RecipesConfig',
+    'favorite.apps.FavoriteConfig',
+    'urlshortener.apps.UrlshortenerConfig',
+    'subscribe.apps.SubscribeConfig',
 ]
 
 MIDDLEWARE = [
@@ -96,7 +99,7 @@ REST_FRAMEWORK = {
     #     'rest_framework_simplejwt.authentication.JWTAuthentication',
     # ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 10,
+    'PAGE_SIZE': 6,
 }
 
 # SIMPLE_JWT = {

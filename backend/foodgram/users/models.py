@@ -3,9 +3,9 @@ from django.utils import timezone
 from django.conf import settings
 
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MaxValueValidator, MinValueValidator
 
 from .validators import username_validator
+
 
 USER_ROLES = {
     'user': 'user',
@@ -77,23 +77,3 @@ class User(AbstractUser):
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
         ordering = ('id',)
-
-
-class Subsribe(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='subscriber'
-    )
-    subscription = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='subscription'
-    )
-
-    # class Meta:
-        # constraints = (
-        #     models.UniqueConstraint(
-        #         fields=('user', 'subscription'),
-        #         name='unique_follow'
-        #     ),)

@@ -2,18 +2,11 @@ import base64
 
 from rest_framework import serializers, status
 
-from django.conf import settings
 from django.core.files.base import ContentFile
 
-from rest_framework.relations import SlugRelatedField
-from rest_framework.serializers import (
-    ModelSerializer,
-    IntegerField
-)
-from rest_framework.validators import UniqueTogetherValidator
 from rest_framework.authtoken.models import Token
 
-from users.models import User, Subsribe
+from users.models import User
 
 
 class Base64ImageField(serializers.ImageField):
@@ -127,30 +120,3 @@ class ChangePasswordSerializer(serializers.Serializer):
 
     new_password = serializers.CharField()
     current_password = serializers.CharField()
-
-
-class SubscribeSerializer(serializers.ModelSerializer):
-    user = serializers.SlugRelatedField(
-        slug_field='username',
-        read_only=True,
-        default=serializers.CurrentUserDefault())
-    subscription = serializers.SlugRelatedField(
-        slug_field='username',
-        queryset=User.objects.all())
-
-    class Meta:
-        model = User
-        fields = ('user', 'subscription')
-        validators = (
-            UniqueTogetherValidator(
-                queryset=Subsribe.objects.all(),
-                fields=('user', 'subscription'),
-                message=('Вы уже подписаны на этого автора')
-            ),
-        )
-
-    def validate(self, data):
-        if self.context['request'].user == data['subsribtion']:
-            raise serializers.ValidationError(
-                'Нельзя подписаться на себя!')
-        return data

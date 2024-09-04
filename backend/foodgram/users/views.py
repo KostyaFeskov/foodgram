@@ -3,23 +3,28 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth import authenticate
 
-from rest_framework import viewsets, status, mixins
+from rest_framework import viewsets, status
+
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
-
 
 from users.permissions import IsAdmin
 from users.serializers import (
     SignUpSerializer, TokenSerializer,
-    UserSerializer, SubscribeSerializer
+    UserSerializer,
+)
+from subscribe.serializers import (
+    UserSubscriptionCreationSerializer,
+    UserSubscriptionDeleteSerializer,
+    UserSubscriptionSerializer
 )
 
-from users.models import User, Subsribe
+from users.models import User
+from subscribe.models import Subsribe
 
 from .utils import generate_confirmation_code, send_confirmation_code
 
@@ -33,6 +38,74 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = (AllowAny,)
     http_method_names = ['get', 'post', 'patch', 'delete', 'put']
     ALLOWED_HTTP_METHODS = ('get', 'post', 'put', 'delete')
+
+    def get_serializer_class(self):
+        if self.action == 'subscriptions':
+            return UserSubscriptionSerializer
+        elif self.action == 'subscribe':
+            return UserSubscriptionCreationSerializer
+        elif self.action == 'delete_subscribe':
+            return UserSubscriptionDeleteSerializer
+        return super().get_serializer_class()
+
+    def get_queryset(self):
+        if self.action == 'subscriptions':
+            queryset = self.request.user.subscriber.all()
+            return [sub.subscription for sub in queryset]
+        return super().get_queryset()
+
+    @action(
+        ['get'],
+        detail=False,
+        permission_classes=[IsAuthenticated],
+    )
+    def subscriptions(self, request):
+        """Вывести список подписок пользователя."""
+        return super().list(request)
+
+    @action(
+        ['post'],
+        detail=False,
+        permission_classes=[IsAuthenticated],
+        url_path=r'(?P<id>\d+)/subscribe'
+    )
+    def subscribe(self, request, id):
+        """Подписаться на пользователя."""
+        sub_user = self.get_object()
+
+        serializer = self.get_serializer(
+            instance=sub_user,
+            data={'id': id},
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        Subsribe.objects.create(
+            user=request.user,
+            subscription=sub_user
+        )
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED
+        )
+
+    @subscribe.mapping.delete
+    def delete_subscribe(self, request, id):
+        """Отписаться от пользователя."""
+        sub_user = self.get_object()
+
+        serializer = self.get_serializer(
+            instance=sub_user,
+            data={'id': id},
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        Subsribe.objects.filter(
+            user=request.user,
+            subscription=sub_user
+        ).delete()
+        return Response(
+            status=status.HTTP_204_NO_CONTENT
+        )
 
     @action(
         methods=('post',),
@@ -144,22 +217,3 @@ class UserLogoutView(APIView):
         auth_token = Token.objects.get(user=request.user)
         auth_token.delete()
         return Response({"detail": "До встречи!"}, status=status.HTTP_200_OK)
-
-
-class SubscribeViewSet(
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    viewsets.GenericViewSet
-):
-
-    queryset = Subsribe.objects.all()
-    serializer_class = SubscribeSerializer
-    permission_classes = (IsAuthenticated,)
-    # filter_backends = (filters.SearchFilter,)
-    search_fields = ('subsribtion__username', 'user__username')
-
-    def get_queryset(self):
-        return self.request.user.subscriber.all()
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
