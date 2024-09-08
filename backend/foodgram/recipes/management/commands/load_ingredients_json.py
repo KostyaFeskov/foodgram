@@ -8,6 +8,7 @@ from foodgram import settings
 
 DIR_DATA = settings.BASE_DIR / '../data'
 
+
 class Command(BaseCommand):
 
     def handle(self, *args, **options):

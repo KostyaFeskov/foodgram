@@ -6,7 +6,7 @@ from favorite.models import Favorite
 
 
 class UserFavoriteActionSerializer(serializers.ModelSerializer):
-    
+
     id = serializers.IntegerField()
 
     class Meta:

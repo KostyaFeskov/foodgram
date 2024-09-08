@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 
+from django.http import HttpResponse
 from django.urls import reverse
 from django.db.models import Sum
 
@@ -209,7 +210,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response({
                 'Не предоставлены учётные данные.'
             }, status=status.HTTP_401_UNAUTHORIZED)
-        
+
         serializer = RecipeSerializer(
             data=request.data,
             context={'request': request}

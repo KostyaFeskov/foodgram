@@ -28,4 +28,3 @@ class Favorite(models.Model):
                 fields=('user', 'favorite'),
                 name='unique_favorite'
             ),)
-
