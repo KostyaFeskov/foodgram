@@ -6,5 +6,5 @@ from . import views
 app_name = 'urlshortener'
 
 urlpatterns = [
-    path('s/<str:url_hash>/', views.load_url, name='load_url')
+    path('s/<str:url_hash>/', views.url_load, name='load_url')
 ]

@@ -1,4 +1,3 @@
-import csv
 import xlwt
 
 from rest_framework import status
@@ -72,7 +71,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(
             data={'url_original': url_original},
             context={'request': request}
-            )
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -86,7 +85,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def is_in_shopping_cart(self, request, pk):
 
         buy_recipe = self.get_object()
-
         serializer = self.get_serializer(
             instance=buy_recipe,
             data={'id': pk},
@@ -104,9 +102,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @is_in_shopping_cart.mapping.delete
     def delete_shopping_cart(self, request, pk):
-        """Отписаться от пользователя."""
-        buy_recipe = self.get_object()
 
+        buy_recipe = self.get_object()
         serializer = self.get_serializer(
             instance=buy_recipe,
             data={'id': pk},
@@ -127,7 +124,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated],
     )
     def download_shopping_cart(self, request):
-        """Скачать список ингредиентов из корзины покупок."""
+
         ingredient_list = IngredientRecipe.objects.filter(
             recipe__shopping_cart_recipe__user=request.user
         ).values_list(
@@ -174,7 +171,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def create_favorite(self, request, pk):
 
         favorite_recipe = self.get_object()
-
         serializer = self.get_serializer(
             instance=favorite_recipe,
             data={'id': pk},
@@ -194,7 +190,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def delete_favorite(self, request, pk):
 
         favorite_recipe = self.get_object()
-
         serializer = self.get_serializer(
             instance=favorite_recipe,
             data={'id': pk},
@@ -210,12 +205,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
 
     def create(self, request, *args, **kwargs):
+
         if not request.user.is_authenticated:
             return Response({
-                'detail': 'Authentication credentials were not provided.'
+                'Не предоставлены учётные данные.'
             }, status=status.HTTP_401_UNAUTHORIZED)
+        
         serializer = RecipeSerializer(
-            data=request.data, context={'request': request}
+            data=request.data,
+            context={'request': request}
         )
         if serializer.is_valid():
             serializer.save(author=self.request.user)
@@ -227,9 +225,11 @@ class IngridientsViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = None
+    http_method_names = ['get']
 
 
 class TagsViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     pagination_class = None
+    http_method_names = ['get']

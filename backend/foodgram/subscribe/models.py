@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
+
 class Subsribe(models.Model):
     user = models.ForeignKey(
         User,
@@ -24,7 +25,7 @@ class Subsribe(models.Model):
                 fields=('user', 'subscription'),
                 name='unique_subscribtion'
             ),)
-        
+
     def clean(self) -> None:
         if self.user == self.subscription:
             raise ValidationError(
@@ -32,4 +33,3 @@ class Subsribe(models.Model):
                     'subscribe_target': 'Нельзя подписаться на себя.'
                 }
             )
-

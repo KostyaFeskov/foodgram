@@ -1,12 +1,12 @@
-import base64
-
 from rest_framework import serializers
 
 from recipes.models import Recipe
 from recipes.serializers import RecipeShortSerializer
 from favorite.models import Favorite
 
+
 class UserFavoriteActionSerializer(serializers.ModelSerializer):
+    
     id = serializers.IntegerField()
 
     class Meta:
@@ -22,6 +22,7 @@ class UserFavoriteActionSerializer(serializers.ModelSerializer):
 
 
 class UserFavoriteCreationSerializer(UserFavoriteActionSerializer):
+
     def validate_id(self, request):
         if Favorite.objects.filter(
             user=self.context['request'].user,
@@ -34,6 +35,7 @@ class UserFavoriteCreationSerializer(UserFavoriteActionSerializer):
 
 
 class UserFavoriteDeleteSerializer(UserFavoriteActionSerializer):
+
     def validate_id(self, request):
         if not Favorite.objects.filter(
             user=self.context['request'].user,
@@ -72,4 +74,3 @@ class UserFavoriteSerializer(serializers.ModelSerializer):
             many=True
         )
         return serializer.data
-    

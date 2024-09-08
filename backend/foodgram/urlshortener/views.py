@@ -7,7 +7,7 @@ from .models import LinkShortener
 
 
 @require_GET
-def load_url(request, url_hash: str) -> HttpResponse:
+def url_load(request, url_hash: str) -> HttpResponse:
 
     url_original = get_object_or_404(
         LinkShortener, url_hash=url_hash

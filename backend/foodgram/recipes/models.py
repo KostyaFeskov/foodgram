@@ -1,11 +1,11 @@
 from django.db import models
 
 from django.core.validators import MinValueValidator
-
 from django.db.models import UniqueConstraint
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+
 
 class Ingredient(models.Model):
     name = models.CharField(max_length=64)
@@ -27,7 +27,8 @@ class Recipe(models.Model):
     name = models.CharField(max_length=256)
     text = models.TextField()
     author = models.ForeignKey(
-        User, related_name='author',
+        User,
+        related_name='author',
         on_delete=models.CASCADE
     )
     ingredients = models.ManyToManyField(
@@ -67,8 +68,10 @@ class IngredientRecipe(models.Model):
 
     class Meta:
         constraints = [
-            UniqueConstraint(fields=['recipe', 'ingredient'],
-                             name='unique_recipe_ingredient')
+            UniqueConstraint(
+                fields=['recipe', 'ingredient'],
+                name='unique_recipe_ingredient'
+            )
         ]
 
 
@@ -78,8 +81,10 @@ class TagRecipe(models.Model):
 
     class Meta:
         constraints = [
-            UniqueConstraint(fields=['recipe', 'tag'],
-                             name='unique_recipe_tag')
+            UniqueConstraint(
+                fields=['recipe', 'tag'],
+                name='unique_recipe_tag'
+            )
         ]
 
 
@@ -96,9 +101,9 @@ class ShoppingCart(models.Model):
     )
 
     class Meta:
-        constraints = (
+        constraints = [
             models.UniqueConstraint(
                 fields=('user', 'recipe'),
                 name='unique_shopping_cart'
-            ),)
-
+            ),
+        ]

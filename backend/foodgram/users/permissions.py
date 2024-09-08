@@ -2,20 +2,12 @@ from rest_framework import permissions
 
 
 class IsAdmin(permissions.BasePermission):
-    """Доступ администратора.
-        Доступ разрешен если пользователь авторизирован
-        и в группе администратор или суперпользователь.
-    """
 
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.is_admin
 
 
 class IsAdminOrReadOnly(IsAdmin):
-    """Доступ на изменение для администратора.
-        Доступ разрешен если пользователь авторизирован
-        и в группе администратор или суперпользователь.
-    """
 
     def has_permission(self, request, view):
         return (
@@ -25,10 +17,6 @@ class IsAdminOrReadOnly(IsAdmin):
 
 
 class IsAuthorModeratorAdminOrReadOnly(permissions.BasePermission):
-    """Доступ для автора, модератора или администратора.
-        Доступ разрешен если пользователь авторизирован
-        и автор или модератор или администратор или суперпользователь.
-    """
 
     def has_permission(self, request, view):
         return (

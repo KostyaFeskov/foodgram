@@ -3,10 +3,10 @@ from recipes.models import Tag
 from .models import IngredientRecipe, Recipe
 
 
-def create_recipe_ingredient(
+def create_ingredient(
         recipe: Recipe, ingredients_data: list[dict[str, int]]
-) -> None:
-    """Добавляет ингредиенты к полученному рецепту."""
+):
+
     if not recipe or not ingredients_data:
         return
     for ingredient in ingredients_data:
@@ -19,8 +19,8 @@ def create_recipe_ingredient(
         )
 
 
-def add_tags_to_recipe(recipe: Recipe, tags_data: list[int]) -> None:
-    """Добавляет тэги к полученному рецепту."""
+def add_tags(recipe: Recipe, tags_data: list[int]):
+
     if not recipe or not tags_data:
         return
     for tag_id in tags_data:

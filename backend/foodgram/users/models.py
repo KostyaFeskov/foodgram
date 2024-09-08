@@ -48,9 +48,6 @@ class User(AbstractUser):
         null=True,
         default=None
     )
-    is_subscribed = models.BooleanField(
-        default=False
-    )
     role = models.CharField(
         verbose_name='Роль',
         max_length=len(max(USER_ROLES.values(), key=len)),
