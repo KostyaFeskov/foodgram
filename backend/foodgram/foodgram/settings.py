@@ -93,20 +93,20 @@ DATABASES = {
 #     }
 # }
 
-DJOSER = { 
-    'LOGIN_FIELD': 'email', 
-    'HIDE_USERS': False, 
-    'SERIALIZERS': { 
-        'user_create': 'users.serializers.UserSerializer', 
-        'user': 'users.serializers.UserMeSerializer', 
-        'user_list': 'users.serializers.UserMeSerializer', 
-        'current_user': 'users.serializers.UserMeSerializer', 
-    }, 
-    'PERMISSIONS': { 
-        'user_list': ('rest_framework.permissions.AllowAny',), 
-        'user': ('rest_framework.permissions.IsAuthenticatedOrReadOnly',), 
-        'me': ('djoser.permissions.CurrentUserOrAdmin',), 
-    }, 
+DJOSER = {
+    'LOGIN_FIELD': 'email',
+    'HIDE_USERS': False,
+    'SERIALIZERS': {
+        'user_create': 'users.serializers.UserSerializer',
+        'user': 'users.serializers.UserMeSerializer',
+        'user_list': 'users.serializers.UserMeSerializer',
+        'current_user': 'users.serializers.UserMeSerializer',
+    },
+    'PERMISSIONS': {
+        'user_list': ('rest_framework.permissions.AllowAny',),
+        'user': ('rest_framework.permissions.IsAuthenticatedOrReadOnly',),
+        'me': ('djoser.permissions.CurrentUserOrAdmin',),
+    },
 }
 
 REST_FRAMEWORK = {
