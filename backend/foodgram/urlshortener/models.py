@@ -1,7 +1,6 @@
 import random
 import string
 
-from django.conf import settings
 from django.db import models
 
 
@@ -18,7 +17,7 @@ class LinkShortener(models.Model):
     url_hash = models.CharField(
         max_length=12,
         default=get_hash,
-        unique=True,
+        unique=True
     )
     url_original = models.CharField(
         max_length=256,

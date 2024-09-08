@@ -24,42 +24,57 @@ class Tag(models.Model):
 
 
 class Recipe(models.Model):
-    name = models.CharField(max_length=256)
-    text = models.TextField()
+    name = models.CharField(
+        max_length=256,
+        verbose_name='Название'
+    )
+    text = models.TextField(verbose_name='Описание')
     author = models.ForeignKey(
         User,
         related_name='author',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        verbose_name='Автор'
     )
     ingredients = models.ManyToManyField(
         Ingredient,
-        through='IngredientRecipe'
+        through='IngredientRecipe',
+        verbose_name='Ингредиенты'
     )
     image = models.ImageField(
         upload_to='recipes/images/',
         null=True,
-        default=None
+        default=None,
+        verbose_name='Фотография'
     )
-    cooking_time = models.IntegerField()
+    cooking_time = models.IntegerField(verbose_name='Время приготовления')
     tags = models.ManyToManyField(
         Tag,
-        through='TagRecipe'
+        through='TagRecipe',
+        verbose_name='Тэг'
     )
+
+    class Meta:
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
 
     def __str__(self):
         return self.name
+    
+
 
 
 class IngredientRecipe(models.Model):
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
-        related_name='recipe_ingredients'
+        related_name='recipe_ingredients',
+        verbose_name='Ингредиент'
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='recipe_ingredients'
+        related_name='recipe_ingredients',
+        verbose_name='Рецепт'
     )
     amount = models.PositiveSmallIntegerField(
         default=1, validators=[MinValueValidator(1)],
@@ -67,6 +82,8 @@ class IngredientRecipe(models.Model):
     )
 
     class Meta:
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
         constraints = [
             UniqueConstraint(
                 fields=['recipe', 'ingredient'],
@@ -76,10 +93,20 @@ class IngredientRecipe(models.Model):
 
 
 class TagRecipe(models.Model):
-    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    tag = models.ForeignKey(
+        Tag,
+        on_delete=models.CASCADE,
+        verbose_name='Тэг'
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        verbose_name='Рецепт'
+    )
 
     class Meta:
+        verbose_name = 'Тэг'
+        verbose_name_plural = 'Тэги'
         constraints = [
             UniqueConstraint(
                 fields=['recipe', 'tag'],
@@ -92,15 +119,18 @@ class ShoppingCart(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='users_shopping_cart'
+        related_name='users_shopping_cart',
+        verbose_name='Пользователь'
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='shopping_cart_recipe'
+        related_name='shopping_cart_recipe',
+        verbose_name='Рецепт в корзине'
     )
 
     class Meta:
+        verbose_name = 'Корзина'
         constraints = [
             models.UniqueConstraint(
                 fields=('user', 'recipe'),

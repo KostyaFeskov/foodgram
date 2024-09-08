@@ -34,19 +34,20 @@ class User(AbstractUser):
         unique=True,
     )
     first_name = models.CharField(
-        verbose_name='first_name',
+        verbose_name='Имя',
         max_length=150,
         unique=False
     )
     last_name = models.CharField(
-        verbose_name='last_name',
+        verbose_name='Фамилия',
         max_length=150,
         unique=False
     )
     avatar = models.ImageField(
         upload_to='users/avatars/',
         null=True,
-        default=None
+        default=None,
+        verbose_name='Аватар'
     )
     role = models.CharField(
         verbose_name='Роль',

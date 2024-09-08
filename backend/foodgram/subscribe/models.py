@@ -11,15 +11,19 @@ class Subsribe(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='subscriber'
+        related_name='subscriber',
+        verbose_name='Пользователь'
     )
     subscription = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='subscription'
+        related_name='subscription',
+        verbose_name='Подписка'
     )
 
     class Meta:
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
         constraints = (
             models.UniqueConstraint(
                 fields=('user', 'subscription'),
