@@ -1,6 +1,3 @@
-import base64
-
-from django.core.files.base import ContentFile
 from rest_framework import serializers
 
 from .models import (
@@ -10,9 +7,9 @@ from .models import (
     Tag,
     ShoppingCart
 )
-from favorite.models import Favorite
+from .models import Favorite
 from users.serializers import UserMeSerializer
-from .utils import create_ingredient, add_tags
+from .utils import create_ingredient, add_tags, Base64ImageField
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -29,17 +26,6 @@ class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = ('id', 'name', 'slug')
-
-
-class Base64ImageField(serializers.ImageField):
-    def to_internal_value(self, data):
-        if isinstance(data, str) and data.startswith('data:image'):
-            format, imgstr = data.split(';base64,')
-            ext = format.split('/')[-1]
-
-            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
-
-        return super().to_internal_value(data)
 
 
 class IngredientRecipeSerializer(serializers.ModelSerializer):
@@ -106,7 +92,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
             self.context['request'].user.is_authenticated
             and Favorite.objects.filter(
                 user=self.context['request'].user,
-                favorite=obj
+                recipe=obj
             ).exists()
         )
 
@@ -261,3 +247,74 @@ class ShoppingCartDeleteSerializer(ShoppingCartActionSerializer):
                 f'Рецепта ID №{request} нет в списке покупок.'
             )
         return request
+
+
+class UserFavoriteActionSerializer(serializers.ModelSerializer):
+
+    id = serializers.IntegerField()
+
+    class Meta:
+        model = Recipe
+        fields = ('id',)
+
+    def to_representation(self, instance):
+        serializer = UserFavoriteSerializer(
+            instance,
+            context={'request': self.context['request']}
+        )
+        return serializer.data
+
+
+class UserFavoriteCreationSerializer(UserFavoriteActionSerializer):
+
+    def validate_id(self, request):
+        if Favorite.objects.filter(
+            user=self.context['request'].user,
+            recipe=request
+        ).exists():
+            raise serializers.ValidationError(
+                f'Рецепт ID №{request} уже в избранном.'
+            )
+        return request
+
+
+class UserFavoriteDeleteSerializer(UserFavoriteActionSerializer):
+
+    def validate_id(self, request):
+        if not Favorite.objects.filter(
+            user=self.context['request'].user,
+            recipe=request
+        ).exists():
+            raise serializers.ValidationError(
+                f'Рецепта ID №{request} нет в избранном.'
+            )
+        return request
+
+
+class UserFavoriteSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'id',
+            'name',
+            'image',
+            'cooking_time',
+        )
+
+    def get_recipes_count(self, obj):
+        return Recipe.objects.filter(author=obj).count()
+
+    def get_recipes(self, obj):
+        recipes_limit = self.context['request'].query_params.get(
+            'recipes_limit'
+        )
+        queryset = Recipe.objects.filter(author=obj)
+        if recipes_limit:
+            queryset = queryset[:int(recipes_limit)]
+        serializer = RecipeShortSerializer(
+            queryset,
+            context={'request': self.context['request']},
+            many=True
+        )
+        return serializer.data

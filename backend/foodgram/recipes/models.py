@@ -4,19 +4,21 @@ from django.core.validators import MinValueValidator
 from django.db.models import UniqueConstraint
 from django.contrib.auth import get_user_model
 
+from foodgram.constants import LEN_254, LEN_64, LEN_10
+
 User = get_user_model()
 
 
 class Ingredient(models.Model):
-    name = models.CharField(max_length=64)
-    measurement_unit = models.CharField(max_length=10)
+    name = models.CharField(max_length=LEN_64)
+    measurement_unit = models.CharField(max_length=LEN_10)
 
     def __str__(self):
         return self.name
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=64, unique=True)
+    name = models.CharField(max_length=LEN_64, unique=True)
     slug = models.SlugField(unique=True)
 
     def __str__(self):
@@ -25,7 +27,7 @@ class Tag(models.Model):
 
 class Recipe(models.Model):
     name = models.CharField(
-        max_length=256,
+        max_length=LEN_254,
         verbose_name='Название'
     )
     text = models.TextField(verbose_name='Описание')
@@ -135,3 +137,27 @@ class ShoppingCart(models.Model):
                 name='unique_shopping_cart'
             ),
         ]
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='user',
+        verbose_name='Пользователь'
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='favorite',
+        verbose_name='Избранный рецепт',
+        null=True
+    )
+
+    class Meta:
+        verbose_name = 'Избранное'
+        constraints = (
+            models.UniqueConstraint(
+                fields=('user', 'recipe'),
+                name='unique_favorite'
+            ),)

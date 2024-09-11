@@ -1,5 +1,3 @@
-import xlwt
-
 from rest_framework import status
 
 from rest_framework import viewsets
@@ -8,33 +6,30 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 
-from django.http import HttpResponse
 from django.urls import reverse
-from django.db.models import Sum
-
+from django.shortcuts import get_object_or_404
 
 from .models import (
     Ingredient,
     Recipe,
     Tag,
     ShoppingCart,
-    IngredientRecipe
 )
 
-from favorite.models import Favorite
+from .models import Favorite
 from .serializers import (
     IngredientSerializer,
     RecipeSerializer,
     TagSerializer,
     ShoppingCartCreationSerializer,
     ShoppingCartDeleteSerializer,
-)
-
-from favorite.serializers import (
     UserFavoriteCreationSerializer,
     UserFavoriteDeleteSerializer,
 )
+
 from urlshortener.serializers import UrlShortenerSerializer
+
+from recipes.utils import create_xls_file
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -49,11 +44,37 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return UserFavoriteDeleteSerializer
         elif self.action == 'get_short_link':
             return UrlShortenerSerializer
-        elif self.action == 'is_in_shopping_cart':
+        elif self.action == 'add_in_shopping_cart':
             return ShoppingCartCreationSerializer
         elif self.action == 'delete_shopping_cart':
             return ShoppingCartDeleteSerializer
         return super().get_serializer_class()
+
+    def _add_in_cart_or_in_favorite(self, request, pk):
+
+        instance = self.get_object()
+        serializer = self.get_serializer(
+            instance=instance,
+            data={'id': pk},
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED
+        )
+
+    def _delete_from_shopping_cart_or_favorite(self, request, pk, model):
+        recipe = get_object_or_404(Recipe, pk=pk)
+        object = model.objects.filter(
+            user=request.user,
+            recipe=recipe
+        )
+        object.delete()
+        return Response(
+            status=status.HTTP_204_NO_CONTENT
+        )
 
     @action(
         ['get'],
@@ -82,40 +103,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated],
         url_path=r'(?P<pk>\d+)/shopping_cart'
     )
-    def is_in_shopping_cart(self, request, pk):
+    def add_in_shopping_cart(self, request, pk):
+        return self._add_in_cart_or_in_favorite(request, pk)
 
-        buy_recipe = self.get_object()
-        serializer = self.get_serializer(
-            instance=buy_recipe,
-            data={'id': pk},
-            context={'request': request}
-        )
-        serializer.is_valid(raise_exception=True)
-        ShoppingCart.objects.create(
-            user=request.user,
-            recipe=buy_recipe
-        )
-        return Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED
-        )
-
-    @is_in_shopping_cart.mapping.delete
+    @add_in_shopping_cart.mapping.delete
     def delete_shopping_cart(self, request, pk):
-
-        buy_recipe = self.get_object()
-        serializer = self.get_serializer(
-            instance=buy_recipe,
-            data={'id': pk},
-            context={'request': request}
-        )
-        serializer.is_valid(raise_exception=True)
-        ShoppingCart.objects.filter(
-            user=request.user,
-            recipe=buy_recipe
-        ).delete()
-        return Response(
-            status=status.HTTP_204_NO_CONTENT
+        return self._delete_from_shopping_cart_or_favorite(
+            request, pk, ShoppingCart
         )
 
     @action(
@@ -125,42 +119,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def download_shopping_cart(self, request):
 
-        ingredient_list = IngredientRecipe.objects.filter(
-            recipe__shopping_cart_recipe__user=request.user
-        ).values_list(
-            'ingredient__name',
-            'ingredient__measurement_unit',
-        ).annotate(Sum('amount'))
-
-        response = HttpResponse(
-            content_type='application/vnd.ms-excel',
-            headers={
-                'Content-Disposition':
-                'attachment; filename="to_buy_list.xls"'
-            },
-        )
-        wb = xlwt.Workbook(encoding='utf-8')
-        ws = wb.add_sheet("sheet1")
-        row_num = 0
-        font_style = xlwt.XFStyle()
-        font_style.font.bold = True
-        columns = [
-            'Название ингредиента',
-            'Единица измерения',
-            'Количество',
-        ]
-        for col_num in range(len(columns)):
-            ws.write(row_num, col_num, columns[col_num], font_style)
-        font_style = xlwt.XFStyle()
-
-        for row in ingredient_list:
-            row_num = row_num + 1
-            ws.write(row_num, 0, row[0], font_style)
-            ws.write(row_num, 1, row[1], font_style)
-            ws.write(row_num, 2, row[2], font_style)
-
-        wb.save(response)
-        return response
+        return create_xls_file(request)
 
     @action(
         ['post'],
@@ -169,39 +128,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path=r'(?P<pk>\d+)/favorite'
     )
     def create_favorite(self, request, pk):
-
-        favorite_recipe = self.get_object()
-        serializer = self.get_serializer(
-            instance=favorite_recipe,
-            data={'id': pk},
-            context={'request': request}
-        )
-        serializer.is_valid(raise_exception=True)
-        Favorite.objects.create(
-            user=request.user,
-            favorite=favorite_recipe
-        )
-        return Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED
-        )
+        return self._add_in_cart_or_in_favorite(request, pk)
 
     @create_favorite.mapping.delete
     def delete_favorite(self, request, pk):
-
-        favorite_recipe = self.get_object()
-        serializer = self.get_serializer(
-            instance=favorite_recipe,
-            data={'id': pk},
-            context={'request': request}
-        )
-        serializer.is_valid(raise_exception=True)
-        Favorite.objects.filter(
-            user=request.user,
-            favorite=favorite_recipe
-        ).delete()
-        return Response(
-            status=status.HTTP_204_NO_CONTENT
+        return self._delete_from_shopping_cart_or_favorite(
+            request, pk, Favorite
         )
 
     def create(self, request, *args, **kwargs):

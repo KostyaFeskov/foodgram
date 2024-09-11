@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import IngredientRecipe, Recipe
+from .models import IngredientRecipe, Recipe, Favorite
 
 admin.site.empty_value_display = 'Пусто'
 
@@ -32,4 +32,19 @@ class RecipeAdmin(admin.ModelAdmin):
     search_fields = (
         'name',
         'author',
+    )
+
+
+@admin.register(Favorite)
+class FavoriteAdmin(admin.ModelAdmin):
+    list_display = (
+        'user',
+        'recipe'
+    )
+    list_display_links = (
+        'user',
+        'recipe',
+    )
+    search_fields = (
+        'user',
     )
