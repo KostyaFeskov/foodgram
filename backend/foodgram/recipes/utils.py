@@ -1,9 +1,7 @@
 import base64
 import xlwt
 
-from rest_framework import serializers, status
-
-from rest_framework.response import Response
+from rest_framework import serializers
 
 from django.core.files.base import ContentFile
 
@@ -12,7 +10,7 @@ from django.db.models import Sum
 
 from recipes.models import Ingredient
 from recipes.models import Tag
-from .models import IngredientRecipe, Recipe, ShoppingCart
+from .models import IngredientRecipe, Recipe
 
 
 def create_ingredient(
