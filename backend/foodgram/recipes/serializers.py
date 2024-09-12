@@ -88,8 +88,10 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         return result
 
     def get_is_favorite(self, obj):
+        request = self.context.get('request')
         return (
-            self.context['request'].user.is_authenticated
+            request
+            and request.user.is_authenticated
             and Favorite.objects.filter(
                 user=self.context['request'].user,
                 recipe=obj
@@ -97,8 +99,10 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         )
 
     def get_is_in_shopping_cart(self, obj):
+        request = self.context.get('request')
         return (
-            self.context['request'].user.is_authenticated
+            request
+            and request.user.is_authenticated
             and ShoppingCart.objects.filter(
                 user=self.context['request'].user,
                 recipe=obj
