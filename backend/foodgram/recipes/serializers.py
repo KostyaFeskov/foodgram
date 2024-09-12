@@ -262,7 +262,7 @@ class UserFavoriteActionSerializer(serializers.ModelSerializer):
         fields = ('id',)
 
     def to_representation(self, instance):
-        serializer = UserFavoriteSerializer(
+        serializer = RecipeShortSerializer(
             instance,
             context={'request': self.context['request']}
         )
@@ -295,30 +295,30 @@ class UserFavoriteDeleteSerializer(UserFavoriteActionSerializer):
         return request
 
 
-class UserFavoriteSerializer(serializers.ModelSerializer):
+# class UserFavoriteSerializer(serializers.ModelSerializer):
 
-    class Meta:
-        model = Recipe
-        fields = (
-            'id',
-            'name',
-            'image',
-            'cooking_time',
-        )
+#     class Meta:
+#         model = Recipe
+#         fields = (
+#             'id',
+#             'name',
+#             'image',
+#             'cooking_time',
+#         )
 
-    def get_recipes_count(self, obj):
-        return Recipe.objects.filter(author=obj).count()
+#     def get_recipes_count(self, obj):
+#         return Recipe.objects.filter(author=obj).count()
 
-    def get_recipes(self, obj):
-        recipes_limit = self.context['request'].query_params.get(
-            'recipes_limit'
-        )
-        queryset = Recipe.objects.filter(author=obj)
-        if recipes_limit:
-            queryset = queryset[:int(recipes_limit)]
-        serializer = RecipeShortSerializer(
-            queryset,
-            context={'request': self.context['request']},
-            many=True
-        )
-        return serializer.data
+#     def get_recipes(self, obj):
+#         recipes_limit = self.context['request'].query_params.get(
+#             'recipes_limit'
+#         )
+#         queryset = Recipe.objects.filter(author=obj)
+#         if recipes_limit:
+#             queryset = queryset[:int(recipes_limit)]
+#         serializer = RecipeShortSerializer(
+#             queryset,
+#             context={'request': self.context['request']},
+#             many=True
+#         )
+#         return serializer.data

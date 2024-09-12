@@ -1,6 +1,6 @@
-from rest_framework import status
+from rest_framework import status, viewsets
 
-from rest_framework import viewsets
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -17,6 +17,7 @@ from .models import (
 )
 
 from .models import Favorite
+from .filters import RecipeFilter
 from .serializers import (
     IngredientSerializer,
     RecipeSerializer,
@@ -36,6 +37,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     pagination_class = PageNumberPagination
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
 
     def get_serializer_class(self):
         if self.action == 'create_favorite':
@@ -50,16 +53,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return ShoppingCartDeleteSerializer
         return super().get_serializer_class()
 
-    def _add_in_cart_or_in_favorite(self, request, pk):
+    def _add_in_cart_or_in_favorite(self, request, pk, model):
 
-        instance = self.get_object()
+        instance = get_object_or_404(Recipe, pk=pk)
         serializer = self.get_serializer(
             instance=instance,
             data={'id': pk},
             context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        model.objects.create(
+            user=request.user,
+            recipe=instance
+        )
         return Response(
             serializer.data,
             status=status.HTTP_201_CREATED
@@ -104,7 +110,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path=r'(?P<pk>\d+)/shopping_cart'
     )
     def add_in_shopping_cart(self, request, pk):
-        return self._add_in_cart_or_in_favorite(request, pk)
+        return self._add_in_cart_or_in_favorite(request, pk, ShoppingCart)
 
     @add_in_shopping_cart.mapping.delete
     def delete_shopping_cart(self, request, pk):
@@ -128,7 +134,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path=r'(?P<pk>\d+)/favorite'
     )
     def create_favorite(self, request, pk):
-        return self._add_in_cart_or_in_favorite(request, pk)
+        return self._add_in_cart_or_in_favorite(request, pk, Favorite)
 
     @create_favorite.mapping.delete
     def delete_favorite(self, request, pk):
