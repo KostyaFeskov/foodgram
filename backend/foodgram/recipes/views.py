@@ -17,7 +17,7 @@ from .models import (
 )
 
 from .models import Favorite
-from .filters import RecipeFilter
+from .filters import RecipeFilter, IngredientSearchFilter
 from .serializers import (
     IngredientSerializer,
     RecipeSerializer,
@@ -164,6 +164,8 @@ class IngridientsViewSet(viewsets.ModelViewSet):
     serializer_class = IngredientSerializer
     pagination_class = None
     http_method_names = ['get']
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = IngredientSearchFilter
 
 
 class TagsViewSet(viewsets.ModelViewSet):

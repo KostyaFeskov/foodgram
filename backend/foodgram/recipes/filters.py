@@ -1,7 +1,9 @@
+import django_filters
+
 from django_filters.rest_framework import (AllValuesMultipleFilter, Filter,
                                            FilterSet)
 
-from .models import Recipe
+from .models import Recipe, Ingredient
 
 
 class RecipeFilter(FilterSet):
@@ -33,3 +35,14 @@ class RecipeFilter(FilterSet):
             )
             return queryset.filter(id__in=favorite_recipes)
         return queryset
+
+
+class IngredientSearchFilter(django_filters.FilterSet):
+    name = django_filters.CharFilter(
+        field_name='name',
+        lookup_expr='istartswith'
+    )
+
+    class Meta:
+        model = Ingredient
+        fields = ('name',)
