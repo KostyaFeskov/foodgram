@@ -14,7 +14,7 @@ USER_READ_EDIT_URL = 'me'
 
 SECRET_KEY = os.getenv('SECRET_KEY', default='Очень сложный ключ')
 
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'foodgram-kafes.sytes.net']
 
 INSTALLED_APPS = [
